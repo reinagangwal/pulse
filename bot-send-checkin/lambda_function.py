@@ -5,8 +5,23 @@ from datetime import datetime, timezone, timedelta
 from twilio.rest import Client
 from bedrock_agent import generate_checkin_message
 
-TWILIO_ACCOUNT_SID = os.environ['TWILIO_ACCOUNT_SID']
-TWILIO_AUTH_TOKEN = os.environ['TWILIO_AUTH_TOKEN']
+_secrets_client = boto3.client('secretsmanager')
+_secrets_cache = {}
+
+
+def _get_secret(secret_id):
+    """Fetches and JSON-parses a secret, caching it for the life of this
+    execution environment so we're not calling Secrets Manager on every
+    single invocation — only on cold start."""
+    if secret_id not in _secrets_cache:
+        response = _secrets_client.get_secret_value(SecretId=secret_id)
+        _secrets_cache[secret_id] = json.loads(response['SecretString'])
+    return _secrets_cache[secret_id]
+
+
+_twilio_secret = _get_secret(os.environ.get('TWILIO_SECRET_ID', 'pulse/twilio'))
+TWILIO_ACCOUNT_SID = _twilio_secret['account_sid']
+TWILIO_AUTH_TOKEN = _twilio_secret['auth_token']
 TWILIO_WHATSAPP_NUMBER = os.environ['TWILIO_WHATSAPP_NUMBER']
 MY_WHATSAPP_NUMBER = os.environ['MY_WHATSAPP_NUMBER']
 TABLE_NAME = os.environ.get('TABLE_NAME', 'bot-checkins')
@@ -67,6 +82,12 @@ def lambda_handler(event, context):
         streak_data=streak_data,
         is_work_day=work_day,
     )
+
+    # Belt-and-suspenders: never let an empty/odd model response block the
+    # actual check-in from going out.
+    if not message_body or not message_body.strip():
+        print(f"Warning: model returned empty content for {checkin_type}; using fallback message")
+        message_body = f"⏰ Time for your {checkin_type} check-in!"
 
     # Send via Twilio
     message = client.messages.create(

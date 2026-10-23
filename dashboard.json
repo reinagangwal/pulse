@@ -1,0 +1,73 @@
+{
+  "widgets": [
+    {
+      "type": "metric",
+      "x": 0, "y": 0, "width": 8, "height": 6,
+      "properties": {
+        "title": "Invocations",
+        "region": "us-east-1",
+        "metrics": [
+          ["AWS/Lambda", "Invocations", "FunctionName", "bot-send-checkin", {"stat": "Sum"}],
+          ["AWS/Lambda", "Invocations", "FunctionName", "bot-webhook-handler", {"stat": "Sum"}],
+          ["AWS/Lambda", "Invocations", "FunctionName", "bot-close-out-day", {"stat": "Sum"}]
+        ],
+        "period": 300
+      }
+    },
+    {
+      "type": "metric",
+      "x": 8, "y": 0, "width": 8, "height": 6,
+      "properties": {
+        "title": "Errors",
+        "region": "us-east-1",
+        "metrics": [
+          ["AWS/Lambda", "Errors", "FunctionName", "bot-send-checkin", {"stat": "Sum"}],
+          ["AWS/Lambda", "Errors", "FunctionName", "bot-webhook-handler", {"stat": "Sum"}],
+          ["AWS/Lambda", "Errors", "FunctionName", "bot-close-out-day", {"stat": "Sum"}]
+        ],
+        "period": 300
+      }
+    },
+    {
+      "type": "metric",
+      "x": 16, "y": 0, "width": 8, "height": 6,
+      "properties": {
+        "title": "Duration (avg, ms)",
+        "region": "us-east-1",
+        "metrics": [
+          ["AWS/Lambda", "Duration", "FunctionName", "bot-send-checkin", {"stat": "Average"}],
+          ["AWS/Lambda", "Duration", "FunctionName", "bot-webhook-handler", {"stat": "Average"}],
+          ["AWS/Lambda", "Duration", "FunctionName", "bot-close-out-day", {"stat": "Average"}]
+        ],
+        "period": 300
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0, "y": 6, "width": 8, "height": 6,
+      "properties": {
+        "title": "Throttles",
+        "region": "us-east-1",
+        "metrics": [
+          ["AWS/Lambda", "Throttles", "FunctionName", "bot-send-checkin", {"stat": "Sum"}],
+          ["AWS/Lambda", "Throttles", "FunctionName", "bot-webhook-handler", {"stat": "Sum"}],
+          ["AWS/Lambda", "Throttles", "FunctionName", "bot-close-out-day", {"stat": "Sum"}]
+        ],
+        "period": 300
+      }
+    },
+    {
+      "type": "metric",
+      "x": 8, "y": 6, "width": 16, "height": 6,
+      "properties": {
+        "title": "DynamoDB Capacity (bot-checkins)",
+        "region": "us-east-1",
+        "metrics": [
+          ["AWS/DynamoDB", "ConsumedReadCapacityUnits", "TableName", "bot-checkins", {"stat": "Sum"}],
+          ["AWS/DynamoDB", "ConsumedWriteCapacityUnits", "TableName", "bot-checkins", {"stat": "Sum"}]
+        ],
+        "period": 300
+      }
+    }
+  ]
+}

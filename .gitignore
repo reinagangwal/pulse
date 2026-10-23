@@ -4,3 +4,10 @@ config.json
 .env.*
 __pycache__/
 *.pyc
+secret-*.json
+out.json
+.terraform/
+.terraform.lock.hcl
+terraform/.build/
+*.tfstate
+*.tfstate.*

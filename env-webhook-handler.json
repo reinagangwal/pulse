@@ -1,0 +1,10 @@
+{
+    "Variables": {
+        "TABLE_NAME": "bot-checkins",
+        "USER_ID": "demo_user",
+        "USER_NAME": "Reina",
+        "USER_HABITS": "20-min movement, 2.5L water, phone curfew at 10:30pm, 5-min journal, one tech concept understood",
+        "WORK_DAY_LABEL": "a Pune office day",
+        "HOME_DAY_LABEL": "a Mumbai home day"
+    }
+}

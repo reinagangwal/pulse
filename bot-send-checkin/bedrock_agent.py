@@ -1,15 +1,27 @@
 import os
 import json
+import boto3
 import urllib.request
 import urllib.error
 
-HF_API_TOKEN = os.environ['HF_API_TOKEN']
+_secrets_client = boto3.client('secretsmanager')
+_secrets_cache = {}
 
-# Mistral 7B Instruct — best free option on HuggingFace for instruction following.
+
+def _get_secret(secret_id):
+    if secret_id not in _secrets_cache:
+        response = _secrets_client.get_secret_value(SecretId=secret_id)
+        _secrets_cache[secret_id] = json.loads(response['SecretString'])
+    return _secrets_cache[secret_id]
+
+
+GROQ_API_KEY = _get_secret(os.environ.get('GROQ_SECRET_ID', 'pulse/groq'))['token']
+
+# Groq's free tier — OpenAI-compatible chat completions API, fast inference.
 # Swap this to the Bedrock model ID once AWS support grants access,
-# and replace the _call_hf function with the Bedrock invoke_model call.
-HF_API_URL = "https://router.huggingface.co/v1/chat/completions"
-MODEL_ID = "meta-llama/Llama-3.1-8B-Instruct:fastest"
+# and replace the _call_llm function with the Bedrock invoke_model call.
+GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+MODEL_ID = "openai/gpt-oss-20b"
 
 # All user-specific context is externalized to env vars below so the code
 # itself carries no personal information — only generic fallback defaults.
@@ -62,14 +74,15 @@ Your tone:
 - When on a streak: celebrate it genuinely, not briefly"""
 
 
-def _call_hf(prompt):
+def _call_llm(prompt):
     """
-    Calls HuggingFace Inference API using urllib (no extra dependencies).
-    Returns the generated text string.
+    Calls Groq's OpenAI-compatible chat completions endpoint using urllib
+    (no extra dependencies). Returns the generated text string.
     """
     headers = {
-        "Authorization": f"Bearer {HF_API_TOKEN}",
+        "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (compatible; pulse-bot/1.0)",
     }
 
     payload = json.dumps({
@@ -78,11 +91,11 @@ def _call_hf(prompt):
             {"role": "system", "content": PERSONAL_CONTEXT},
             {"role": "user", "content": prompt},
         ],
-        "max_tokens": 150,
+        "max_tokens": 500,
         "temperature": 0.7,
     }).encode("utf-8")
 
-    req = urllib.request.Request(HF_API_URL, data=payload, headers=headers, method="POST")
+    req = urllib.request.Request(GROQ_API_URL, data=payload, headers=headers, method="POST")
 
     try:
         with urllib.request.urlopen(req, timeout=15) as response:
@@ -90,7 +103,7 @@ def _call_hf(prompt):
             return result["choices"][0]["message"]["content"].strip()
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8")
-        raise RuntimeError(f"HuggingFace API error {e.code}: {error_body}")
+        raise RuntimeError(f"Groq API error {e.code}: {error_body}")
 
 
 def calculate_streak(streak_data):
@@ -171,7 +184,7 @@ They should reply yes or no. Under 2 sentences.""",
     if not prompt:
         raise ValueError(f"Unknown checkin_type: {checkin_type}")
 
-    return _call_hf(prompt)
+    return _call_llm(prompt)
 
 
 def generate_acknowledgment(checkin_type, reply_text, streak_data=None):
@@ -184,4 +197,4 @@ If yes/done/completed: brief positive acknowledgment, move on.
 If no/missed: firm but not harsh — one miss is neutral but two in a row is not allowed.
 If ambiguous: interpret charitably and acknowledge."""
 
-    return _call_hf(prompt)
+    return _call_llm(prompt)

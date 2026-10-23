@@ -1,0 +1,53 @@
+name: Lint, test, and deploy Pulse Lambdas
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Lint
+        run: |
+          pip install flake8
+          # Only lint our own source files — not the vendored third-party
+          # dependency folders bundled alongside each function.
+          flake8 bot-send-checkin/lambda_function.py bot-send-checkin/bedrock_agent.py \
+                 bot-webhook-handler/lambda_function.py bot-webhook-handler/bedrock_agent.py \
+                 bot-close-out-day/lambda_function.py \
+                 --max-line-length=120 --extend-ignore=E203,W503
+      - name: Syntax check (compile)
+        run: |
+          python -m py_compile bot-send-checkin/lambda_function.py bot-send-checkin/bedrock_agent.py
+          python -m py_compile bot-webhook-handler/lambda_function.py bot-webhook-handler/bedrock_agent.py
+          python -m py_compile bot-close-out-day/lambda_function.py
+
+  deploy:
+    needs: lint-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Zip and deploy each function
+        run: |
+          for fn in bot-send-checkin bot-webhook-handler bot-close-out-day; do
+            cd "$fn"
+            zip -r "../${fn}-deploy.zip" . -x "*.pyc" "__pycache__/*"
+            cd ..
+            aws lambda update-function-code \
+              --function-name "$fn" \
+              --zip-file "fileb://${fn}-deploy.zip" \
+              --region us-east-1
+          done

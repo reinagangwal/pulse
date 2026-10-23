@@ -1,0 +1,15 @@
+{
+    "Variables": {
+        "TABLE_NAME": "bot-checkins",
+        "USER_ID": "demo_user",
+        "TWILIO_WHATSAPP_NUMBER": "whatsapp:+14155238886",
+        "MY_WHATSAPP_NUMBER": "whatsapp:+919321372634",
+        "USER_NAME": "Reina",
+        "USER_HABITS": "20-min movement, 2.5L water, phone curfew at 10:30pm, 5-min journal, one tech concept understood",
+        "WORK_DAY_LABEL": "a Pune office day",
+        "HOME_DAY_LABEL": "a Mumbai home day",
+        "WORK_DAYS": "1,2,3",
+        "WORK_DAY_SCHEDULE": "7:00am - Wake up, no phone, 500ml water\n7:30am - DSA sprint (60-90 min focused practice)\n9:00am - Get ready and commute\n9:30am - Office: internship work\n1:00pm - Lunch + 500ml water\n2:00pm - Internship work continues\n5:30pm - Clock out, commute home\n6:30pm - 20-min workout\n7:00pm - Shower and decompress\n7:30pm - AI agent build block (45 min)\n8:15pm - Dinner\n8:45pm - Sibling call or free time\n9:30pm - Journal (5 min) + plan tomorrow\n10:30pm - Phone down, sleep",
+        "HOME_DAY_SCHEDULE": "7:00am - Wake up, no phone, 500ml water\n7:15am - Gym (Mon/Fri/Sat) or light walk\n8:30am - Shower\n8:45am - Breakfast with family, phone away\n9:30am - Deep tech block\n1:00pm - Lunch + 500ml water\n2:00pm - Remote internship work\n4:00pm - Break + 500ml water\n5:00pm - Sibling time\n7:00pm - Dinner with family\n8:00pm - Reading or free time\n9:30pm - Journal (5 min) + plan tomorrow\n10:30pm - Phone down, sleep"
+    }
+}
